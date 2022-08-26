@@ -2,7 +2,7 @@
 // http://localhost:3000/isolated/exercise/02.js
 
 import * as React from 'react'
-import {useEffect, useState, useCallback, useReducer} from 'react'
+import {useEffect, useState, useCallback, useReducer, useRef} from 'react'
 
 import {
   fetchPokemon,
@@ -34,21 +34,21 @@ function asyncReducer(state, action) {
 }
 
 const useSafeDispatch = dispatch => {
-  const [mounted, setMounted] = useState(false)
+  const mounted = useRef(false)
 
   useEffect(() => {
-    setMounted(true)
+    mounted.current = true
 
     return () => {
-      setMounted(false)
+      mounted.current = false
     }
   }, [])
 
   const safeDispatch = useCallback(
     (...args) => {
-      mounted && dispatch(...args)
+      mounted.current && dispatch(...args)
     },
-    [mounted, dispatch],
+    [dispatch],
   )
 
   return safeDispatch
