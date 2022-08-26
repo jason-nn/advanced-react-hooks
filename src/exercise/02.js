@@ -61,17 +61,20 @@ const useAsync = initialState => {
     [mounted],
   )
 
-  const run = useCallback(promise => {
-    safeDispatch({type: 'pending'})
-    promise.then(
-      data => {
-        safeDispatch({type: 'resolved', data})
-      },
-      error => {
-        safeDispatch({type: 'rejected', error})
-      },
-    )
-  }, [])
+  const run = useCallback(
+    promise => {
+      safeDispatch({type: 'pending'})
+      promise.then(
+        data => {
+          safeDispatch({type: 'resolved', data})
+        },
+        error => {
+          safeDispatch({type: 'rejected', error})
+        },
+      )
+    },
+    [safeDispatch],
+  )
 
   return [state, run]
 
