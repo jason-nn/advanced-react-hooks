@@ -2,6 +2,8 @@
 // http://localhost:3000/isolated/exercise/02.js
 
 import * as React from 'react'
+import {useEffect, useState, useCallback, useReducer} from 'react'
+
 import {
   fetchPokemon,
   PokemonForm,
@@ -31,10 +33,10 @@ function asyncReducer(state, action) {
   }
 }
 
-const useAsync = (asyncCallback, initialState) => {
+const useAsync = initialState => {
   // -------------------------- start --------------------------
 
-  const [state, dispatch] = React.useReducer(asyncReducer, {
+  const [state, dispatch] = useReducer(asyncReducer, {
     status: 'idle',
     // 🐨 this will need to be "data" instead of "pokemon"
     pokemon: null,
@@ -42,14 +44,31 @@ const useAsync = (asyncCallback, initialState) => {
     ...initialState,
   })
 
-  const run = React.useCallback(promise => {
-    dispatch({type: 'pending'})
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+
+    return () => {
+      setMounted(false)
+    }
+  }, [])
+
+  const safeDispatch = useCallback(
+    (...args) => {
+      mounted && dispatch(...args)
+    },
+    [mounted],
+  )
+
+  const run = useCallback(promise => {
+    safeDispatch({type: 'pending'})
     promise.then(
       data => {
-        dispatch({type: 'resolved', data})
+        safeDispatch({type: 'resolved', data})
       },
       error => {
-        dispatch({type: 'rejected', error})
+        safeDispatch({type: 'rejected', error})
       },
     )
   }, [])
@@ -74,7 +93,7 @@ function PokemonInfo({pokemonName}) {
   // 🐨 this will change from "pokemon" to "data"
   const {data, status, error} = state
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!pokemonName) {
       return
     }
@@ -96,7 +115,7 @@ function PokemonInfo({pokemonName}) {
 }
 
 function App() {
-  const [pokemonName, setPokemonName] = React.useState('')
+  const [pokemonName, setPokemonName] = useState('')
 
   function handleSubmit(newPokemonName) {
     setPokemonName(newPokemonName)
@@ -120,7 +139,7 @@ function App() {
 }
 
 function AppWithUnmountCheckbox() {
-  const [mountApp, setMountApp] = React.useState(true)
+  const [mountApp, setMountApp] = useState(true)
   return (
     <div>
       <label>
