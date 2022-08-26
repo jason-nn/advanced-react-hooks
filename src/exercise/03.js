@@ -21,15 +21,24 @@ const CountProvider = ({children}) => {
   return <CountContext.Provider value={value}>{children}</CountContext.Provider>
 }
 
+const useCount = () => {
+  const context = useContext(CountContext)
+  if (!context) {
+    throw new Error('useCount can only be used within a Context Provider')
+  } else {
+    return context
+  }
+}
+
 function CountDisplay() {
   // 🐨 get the count from useContext with the CountContext
-  const {count} = useContext(CountContext)
+  const {count} = useCount()
   return <div>{`The current count is ${count}`}</div>
 }
 
 function Counter() {
   // 🐨 get the setCount from useContext with the CountContext
-  const {setCount} = useContext(CountContext)
+  const {setCount} = useCount()
   const increment = () => setCount(c => c + 1)
   return <button onClick={increment}>Increment count</button>
 }
