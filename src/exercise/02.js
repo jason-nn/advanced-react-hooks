@@ -33,17 +33,7 @@ function asyncReducer(state, action) {
   }
 }
 
-const useAsync = initialState => {
-  // -------------------------- start --------------------------
-
-  const [state, dispatch] = useReducer(asyncReducer, {
-    status: 'idle',
-    // 🐨 this will need to be "data" instead of "pokemon"
-    pokemon: null,
-    error: null,
-    ...initialState,
-  })
-
+const useSafeDispatch = dispatch => {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -58,8 +48,24 @@ const useAsync = initialState => {
     (...args) => {
       mounted && dispatch(...args)
     },
-    [mounted],
+    [mounted, dispatch],
   )
+
+  return safeDispatch
+}
+
+const useAsync = initialState => {
+  // -------------------------- start --------------------------
+
+  const [state, dispatch] = useReducer(asyncReducer, {
+    status: 'idle',
+    // 🐨 this will need to be "data" instead of "pokemon"
+    pokemon: null,
+    error: null,
+    ...initialState,
+  })
+
+  const safeDispatch = useSafeDispatch(dispatch)
 
   const run = useCallback(
     promise => {
